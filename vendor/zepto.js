@@ -114,6 +114,11 @@ var Zepto = (function() {
   //获取对象类型 
 
   function type(obj) {
+    console.log("--------")
+    console.log(obj);
+    console.log(toString.call(obj))
+    console.log(class2type)
+    console.log(class2type[toString.call(obj)])
     //obj为null或者undefined时，直接返回'null'或'undefined'
     return obj == null ? String(obj) : class2type[toString.call(obj)] || "object"
   }

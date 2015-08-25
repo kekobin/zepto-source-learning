@@ -4,7 +4,10 @@ var Zepto = (function() {
     slice = emptyArray.slice,
 	idSelectorRE = /^#([\w-]*)$/,
 	classSelectorRE = /^\.([\w-]+)$/,
-	tagSelectorRE = /^[\w-]+$/;
+	tagSelectorRE = /^[\w-]+$/,
+	class2Type = {}, 
+	toString = class2Type.toString,
+	readyRE = /complete|loaded|interactive/;
 
 	$ = function(selector, context) {
 		return zepto.init(selector, context);
@@ -13,19 +16,35 @@ var Zepto = (function() {
 	$.fn = {
 		test: function(value) {
 			console.log(value);
+		},
+		each: function(array, callback) {
+			for(var i=0,len=array.length;i<len;i++) {
+				callback(i, array[i]);
+			}
+		},
+		ready: function(callback) {
+			if(readyRE.test(document.readyState)) callback($);
+			else 
+				document.addEventListener("DOMContentLoaded", function() {
+					callback($);
+				}, false);
 		}
 	}
+
+	// $.each("Boolean Number Array Object Date String Error Function RegExp".split(" "), function(i, item) {
+
+	// });
 
 	zepto.init = function(selector, context) {
 		if(!selector) return zepto.Z();
 		else if(isFunction(selector)) {
-
+			$(document).ready(selector);
 		} else {
 			var dom;
 			//....除开其它情况，则此时的selector为普通的CSS选择器，在document中查找selector
 			if(isObject(selector)) {
 			//这里的对象分为纯种对象和非纯种对象(document也是object)
-				dom = (isPlainObject(selector))
+				dom = [selector];
 			} else dom = zepto.qsa(document, selector);
 
 			return zepto.Z(dom, selector);
@@ -33,7 +52,7 @@ var Zepto = (function() {
 	}
 
 	function isFunction(selector) {
-		return typeof selector === "function";
+		return typeof (selector) === "function";
 	}
 
 	function isObject(selector) {
