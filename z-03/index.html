@@ -11,9 +11,52 @@
 	<div id="self">selector为函数、自身的实例、array、对象、html代码片段、存在上下文时</div>
 	<div class="self">selector为id或者class</div>
 	<script>
-	$(function(){
-		console.log($)
+	// $(function(){
+	// 	console.log($)
+	// })
+
+	// var obj1 = {
+	// 	a: {
+	// 		c:'555'
+	// 	},
+	// 	b: '222'
+	// };
+
+	// var obj2 = {
+	// 	a: '333'
+	// };
+
+	// var obj3 = $.extend(true, obj1, obj2);
+	// console.log(obj1)
+	// console.log(obj2)
+	// console.log(obj3)
+
+	// var self = $("#self");
+	// var self2 = $(self);
+
+	// console.log(self)
+	// console.log(self2)
+
+	// var html = $('<div class="test"/>');
+
+	var a = [1,2];
+	a.forEach(function(element,index,array) {
+		// console.log(element) console.log(index) console.log(array)
+	});
+
+	var isAallBigThan3 = a.every(function(element, index, array) {
+		return element > 1;
+	});
+	console.log(isAallBigThan3)
+	var isAsomeBigThan3 = a.some(function(element, index, array) {
+		return element > 1;
+	});
+	console.log(isAsomeBigThan3)
+
+	var filterResult = a.filter(function(element) {
+		return element > 1;
 	})
+	console.log(filterResult)
 	</script>
 </body>
 </html>

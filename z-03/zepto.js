@@ -7,7 +7,8 @@ var Zepto = (function() {
 	tagSelectorRE = /^[\w-]+$/,
 	class2Type = {}, 
 	toString = class2Type.toString,
-	readyRE = /complete|loaded|interactive/;
+	readyRE = /complete|loaded|interactive/,
+	fragmentRE = /^\s*<(\w+|!)[^>]*>/;
 
 	$ = function(selector, context) {
 		return zepto.init(selector, context);
@@ -31,6 +32,33 @@ var Zepto = (function() {
 		}
 	}
 
+	$.extend = function(target) {//这里只传了一个参数target过来，target可能是boolean，可能是{}等对象
+		//arguments直接截取掉target，并将结果以数组形式返回给args。
+		var deep, args = slice.call(arguments, 1);
+
+		if(typeof target == "boolean") {
+			deep = target;
+			target = args.shift();
+		}
+
+		args.forEach(function(arg) {
+			extend(target, arg, deep);
+		});
+
+		return target;
+	}
+
+	function extend(target, source, deep) {
+		for(var key in source) {
+			if(deep && isPlainObject(source[key]) || isArray(source[key])) {
+				if(isPlainObject(source[key]) && !isPlainObject(target[key])) target[key] = {};
+				if(isArray(source[key]) && !isArray(target[key])) target[key] = [];
+
+				extend(target[key], source[key], deep);
+			} else if(source[key] != undefined) target[key] = source[key];
+		}
+	}
+
 	// $.each("Boolean Number Array Object Date String Error Function RegExp".split(" "), function(i, item) {
 
 	// });
@@ -39,24 +67,35 @@ var Zepto = (function() {
 		if(!selector) return zepto.Z();
 		else if(isFunction(selector)) {
 			$(document).ready(selector);
+		} else if(zepto.isZ(selector)) {
+			return selector;
 		} else {
 			var dom;
 			//....除开其它情况，则此时的selector为普通的CSS选择器，在document中查找selector
 			if(isObject(selector)) {
 			//这里的对象分为纯种对象和非纯种对象(document也是object)
-				dom = [selector];
+				dom = [isPlainObject(selector) ? $.extend({}, selector) : selector];
+				//下面的先放着
+			// } else if(fragmentRE.test(selector)) dom =  zepto.fragment(selector.trim(), RegExp.$1, context), selector = null;
+			// } else if(context) return $(context).find(selector); 
 			} else dom = zepto.qsa(document, selector);
 
 			return zepto.Z(dom, selector);
 		}
 	}
 
-	function isFunction(selector) {
-		return typeof (selector) === "function";
-	}
+	// zepto.fragment = function(html, name, properties) {
+	// 	console.log(RegExp.$1)
+	// 	console.log(RegExp.$2)
+	// }
 
-	function isObject(selector) {
-		return typeof selector === "object";
+	//最后的返回形式全部交给zepto.Z来处理
+	zepto.Z = function(dom, selector) {
+		dom = dom || [];
+		dom.__proto__ = $.fn;//通过给dom设置__proto__属性指向$.fn来达到继承$.fn上所有方法的目的
+		dom.selector = selector;
+
+		return dom;
 	}
 
 	zepto.qsa = function(element, selector) {
@@ -76,18 +115,33 @@ var Zepto = (function() {
 		element.querySelectorAll(selector))
 	}
 
+	zepto.isZ = function(selector) {
+		return selector instanceof zepto.Z;
+	}
+
+	function isFunction(selector) {
+		return typeof (selector) === "function";
+	}
+
+	function isObject(selector) {
+		return typeof selector === "object";
+	}
+
+	function isWindow(obj) {
+		return obj != null && obj.window == obj;
+	}
+
+	function isPlainObject(obj) {
+	    return isObject(obj) && !isWindow(obj) && obj.__proto__ == Object.prototype;
+	}
+
+	function isArray(obj) {
+		return obj instanceof Array;
+	}
+
 	//判断是否为document(通过doucment的nodeType为DOCUMENT_NODE判断)
 	function isDocument(obj) {
 		return obj && obj.nodeType === obj.DOCUMENT_NODE;//也可以为obj.nodeType === 9
-	}
-
-	//最后的返回形式全部交给zepto.Z来处理
-	zepto.Z = function(dom, selector) {
-		dom = dom || [];
-		dom.__proto__ = $.fn;//通过给dom设置__proto__属性指向$.fn来达到继承$.fn上所有方法的目的
-		dom.selector = selector;
-
-		return dom;
 	}
 
 	return $;

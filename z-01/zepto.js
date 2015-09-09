@@ -12,7 +12,7 @@ var Zepto = (function() {
 		}
 	}
 
-	zepto.init = functi on(selector, context) {
+	zepto.init = function(selector, context) {
 		if(!selector) return zepto.Z();
 	}
 
